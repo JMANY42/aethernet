@@ -1,5 +1,14 @@
 <h1 align="center"> Aethernet </h1>
 
+## Overview 🧙🏽‍♀️
+Deep within Poyo's Potion Factory, dozens of enchanted cauldrons bubble away, collecting potions from brewing towers spread across the facility. Each cauldron fills at its own pace before courier witches swoop in to haul the precious brews to the Enchanted Market. Every collection is logged using Potion Transport Tickets detailing how much potion was collected and when the journey finished.
+
+But lately, something's amiss! Potion volumes don't quite match the transport tickets, and rumors of unlogged potion drains are spreading through the halls.
+
+Your task is to develop a real-time Potion Flow Monitoring Dashboard that tracks potion levels across all cauldrons, identifies collection events, and checks the Potion Transport Tickets to detect any missing or unlogged potion. The system should automatically flag inconsistencies, identify suspicious activity, and help ensure every drop of potion is properly accounted for.
+
+You'll receive historical and real-time cauldron level data, Potion Transport Ticket records, and a map of the potion network linking each cauldron to the Enchanted Market. Use these to visualize the entire operation, monitor live potion flows, and test your real-time detection logic.
+
 ## Input Data
 - **API Link**: The base url for the API is at https://hackutd2025.eog.systems/ and the link below will detail all the endpoints that can be used to obtain data. The main ones are api/Data and api/Tickets!
 - **List of Cauldrons**: Each cauldron has a unique ID, a name, a latitude/longitude, and a maximum storage volume.
