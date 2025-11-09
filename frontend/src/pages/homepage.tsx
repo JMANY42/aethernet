@@ -1,4 +1,5 @@
 // React and hooks for state, refs, and effects
+import { useEffect, useRef, useState } from 'react';
 // Import two images for the running animation
 import poyoRun1 from '../assets/poyoRun1.png';
 import poyoRun2 from '../assets/poyoRun2.png';
