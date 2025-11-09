@@ -1,34 +1,54 @@
-import { useState } from 'react'
-import reactLogo from '../assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import '../styles/App.css'
+import Homepage from './Homepage'
+import Map from './Map'
+import cloudLogo from '../assets/pixelarticons--cloud.png'
+import whiteCloudLogo from '../assets/whiteCloudLogo.png'
+import { useState, useEffect } from 'react'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <Router>
+      <div className="app">
+        <nav className={`navigation ${isScrolled ? 'scrolled' : ''}`}>
+          <div className="nav-content">
+            <img 
+              src={isScrolled ? cloudLogo : whiteCloudLogo} 
+              alt="Cloud Logo" 
+              className="nav-logo"
+            />
+            <ul>
+              <li>
+                <Link to="/">Home</Link>
+              </li>
+              <li>
+                <Link to="/map">Map</Link>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <Routes>
+          <Route path="/" element={<Homepage />} />
+          <Route path="/map" element={<Map />} />
+        </Routes>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </Router>
   )
 }
 
