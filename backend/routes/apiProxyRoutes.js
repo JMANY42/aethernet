@@ -13,6 +13,30 @@ router.get("/Data", (req, res) => {
   return forwardGet(path, res);
 });
 
+// GET /api/Data/current
+// Calls the upstream /api/Data/:start_date/:end_date with end_date = now (unix seconds)
+// and start_date = now - 60 (last 60 seconds).
+router.get('/Data/current', (req, res) => {
+  const now = Math.floor(Date.now() / 1000);
+  const start = now - 59;
+  const path = `/api/Data/?start_date=${start}&end_date=${now}`;
+  return forwardGet(path, res);
+});
+
+// GET /api/Data/at?date=<unix_seconds>
+// Single-parameter variant: callers may provide `date` (unix seconds). The route
+// will forward to the upstream endpoint as query params start_date=(date-60)&end_date=date
+router.get('/Data/at', (req, res) => {
+  const { date } = req.query;
+  if (!date) return res.status(400).json({ error: 'query parameter `date` is required (unix seconds)' });
+  const numeric = Number(date);
+  if (!Number.isFinite(numeric)) return res.status(400).json({ error: 'query parameter `date` must be a number (unix seconds)' });
+  const end = Math.floor(numeric);
+  const start = end - 59;
+  const path = `/api/Data/?start_date=${start}&end_date=${end}`;
+  return forwardGet(path, res);
+});
+
 // GET /api/Data/metadata
 router.get("/Data/metadata", (req, res) => {
   return forwardGet(`/api/Data/metadata`, res);
