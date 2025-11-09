@@ -13,7 +13,7 @@ function App() {
         <NetworkMap />
       </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
