@@ -55,4 +55,27 @@ router.get("/Tickets", (req, res) => {
   return forwardGet(`/api/Tickets`, res);
 });
 
+// GET /api/Information/nodes
+// Return all nodes from the in-memory graph built at server startup.
+router.get('/Information/nodes', (req, res) => {
+  // Prefer graph from shared graphStore; fall back to req.app.locals.graph
+  let graph = null;
+  try {
+    const { getGraph } = require('../map/graphStore');
+    graph = getGraph();
+  } catch (e) {
+    // ignore and fallback
+  }
+  if (!graph && req.app && req.app.locals) graph = req.app.locals.graph;
+  if (!graph) return res.status(503).json({ error: 'Graph not available' });
+
+  const out = [];
+  for (const [id, node] of graph.nodes.entries()) {
+    if (node && typeof node.toJSON === 'function') out.push(node.toJSON());
+    else out.push({ id });
+  }
+
+  return res.json({ nodes: out });
+});
+
 module.exports = router;

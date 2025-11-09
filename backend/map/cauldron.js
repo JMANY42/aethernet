@@ -28,6 +28,10 @@ class Cauldron {
 		this.longitude = typeof longitude === "string" ? Number(longitude) : longitude;
 		// store as number under camelCase property for code clarity
 		this.maxVolume = typeof max_volume === "undefined" ? null : Number(max_volume);
+
+		// adjacency lists (store node ids)
+		this.fromNodeIds = [];
+		this.toNodeIds = [];
 	}
 
 	/**
@@ -49,6 +53,8 @@ class Cauldron {
 			latitude: this.latitude,
 			longitude: this.longitude,
 			max_volume: this.maxVolume,
+			from_node_ids: Array.isArray(this.fromNodeIds) ? this.fromNodeIds.slice() : [],
+			to_node_ids: Array.isArray(this.toNodeIds) ? this.toNodeIds.slice() : [],
 		};
 	}
 
@@ -87,6 +93,32 @@ class Cauldron {
 		if (typeof this.maxVolume !== "number" || Number.isNaN(this.maxVolume))
 			errors.push("max_volume must be a number");
 		return { valid: errors.length === 0, errors };
+	}
+
+	/**
+	 * Getters for adjacency id lists
+	 */
+	getFromNodeIds() {
+		return Array.isArray(this.fromNodeIds) ? this.fromNodeIds.slice() : [];
+	}
+
+	getToNodeIds() {
+		return Array.isArray(this.toNodeIds) ? this.toNodeIds.slice() : [];
+	}
+
+	/**
+	 * Adders for adjacency id lists (id deduplicated)
+	 */
+	addFromNodeId(nodeId) {
+		if (!nodeId) return;
+		if (!this.fromNodeIds) this.fromNodeIds = [];
+		if (!this.fromNodeIds.includes(nodeId)) this.fromNodeIds.push(nodeId);
+	}
+
+	addToNodeId(nodeId) {
+		if (!nodeId) return;
+		if (!this.toNodeIds) this.toNodeIds = [];
+		if (!this.toNodeIds.includes(nodeId)) this.toNodeIds.push(nodeId);
 	}
 }
 

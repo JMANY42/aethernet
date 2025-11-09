@@ -27,6 +27,9 @@ class Market {
     this.description = description || null;
     this.latitude = typeof latitude === "string" ? Number(latitude) : latitude;
     this.longitude = typeof longitude === "string" ? Number(longitude) : longitude;
+    // adjacency id lists
+    this.fromNodeIds = [];
+    this.toNodeIds = [];
   }
 
   /**
@@ -48,6 +51,8 @@ class Market {
       description: this.description,
       latitude: this.latitude,
       longitude: this.longitude,
+      from_node_ids: Array.isArray(this.fromNodeIds) ? this.fromNodeIds.slice() : [],
+      to_node_ids: Array.isArray(this.toNodeIds) ? this.toNodeIds.slice() : [],
     };
   }
 
@@ -85,6 +90,28 @@ class Market {
     if (typeof this.longitude !== "number" || Number.isNaN(this.longitude))
       errors.push("longitude must be a number");
     return { valid: errors.length === 0, errors };
+  }
+
+  // Getters
+  getFromNodeIds() {
+    return Array.isArray(this.fromNodeIds) ? this.fromNodeIds.slice() : [];
+  }
+
+  getToNodeIds() {
+    return Array.isArray(this.toNodeIds) ? this.toNodeIds.slice() : [];
+  }
+
+  // Adders (deduplicate)
+  addFromNodeId(nodeId) {
+    if (!nodeId) return;
+    if (!this.fromNodeIds) this.fromNodeIds = [];
+    if (!this.fromNodeIds.includes(nodeId)) this.fromNodeIds.push(nodeId);
+  }
+
+  addToNodeId(nodeId) {
+    if (!nodeId) return;
+    if (!this.toNodeIds) this.toNodeIds = [];
+    if (!this.toNodeIds.includes(nodeId)) this.toNodeIds.push(nodeId);
   }
 }
 

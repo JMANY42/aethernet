@@ -24,6 +24,27 @@ class Graph {
     this.adjacency.get(fromId).push({ to: toId, travel_time_minutes: Number(travel_time_minutes) });
     // Ensure 'to' node has adjacency list (even if empty) so iteration is easier
     if (!this.adjacency.has(toId)) this.adjacency.set(toId, []);
+
+    // Update node adjacency id lists if node instances provide the helper methods.
+    // Source node: add the `toId` to its toNodeIds
+    const fromNode = this.getNode(fromId);
+    if (fromNode && typeof fromNode.addToNodeId === "function") {
+      try {
+        fromNode.addToNodeId(toId);
+      } catch (e) {
+        // ignore errors from node mutation to keep graph build resilient
+      }
+    }
+
+    // Target node: add the `fromId` to its fromNodeIds
+    const toNode = this.getNode(toId);
+    if (toNode && typeof toNode.addFromNodeId === "function") {
+      try {
+        toNode.addFromNodeId(fromId);
+      } catch (e) {
+        // ignore errors from node mutation
+      }
+    }
   }
 
   getNode(id) {
