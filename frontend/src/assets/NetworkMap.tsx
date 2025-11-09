@@ -35,70 +35,93 @@ interface CauldronPath {
   };
 }
 
-// TODO: Replace with API call - GET /api/cauldrons
-const sampleCauldrons: Cauldron[] = [
-  {
-    id: 'cauldron-1',
-    name: 'North Hub',
-    longitude: -74.006,
-    latitude: 40.7128,
-    capacity: 1000,
-    currentFill: 750,
-    fillPercent: 75
-  },
-  {
-    id: 'cauldron-2',
-    name: 'East Station',
-    longitude: -73.935,
-    latitude: 40.730,
-    capacity: 500,
-    currentFill: 200,
-    fillPercent: 40
-  },
-  {
-    id: 'cauldron-3',
-    name: 'West Node',
-    longitude: -74.075,
-    latitude: 40.680,
-    capacity: 750,
-    currentFill: 680,
-    fillPercent: 90
-  }
-];
-
-// TODO: Replace with API call - GET /api/paths
-const samplePaths: CauldronPath[] = [
-  {
-    id: 'path-1',
-    from: 'cauldron-1',
-    to: 'cauldron-2',
-    bandwidth: 100,
-    shouldPulse: true
-  },
-  {
-    id: 'path-2',
-    from: 'cauldron-1',
-    to: 'cauldron-3',
-    bandwidth: 50,
-    shouldPulse: false
-  },
-  {
-    id: 'path-3',
-    from: 'cauldron-2',
-    to: 'cauldron-3',
-    bandwidth: 25,
-    shouldPulse: true
-  }
-];
+// Data will be fetched from the API proxy endpoints and mapped into the
+// local UI-friendly shapes. We keep the local interfaces above and map
+// whatever the backend returns into those shapes so the rest of the
+// component (drawing markers/paths) is unchanged.
 
 function NetworkMap() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   
-  // TODO: Replace with API data fetching
-  const [cauldrons] = useState<Cauldron[]>(sampleCauldrons);
-  const [paths] = useState<CauldronPath[]>(samplePaths);
+  // State populated from API
+  const [cauldrons, setCauldrons] = useState<Cauldron[]>([]);
+  const [paths, setPaths] = useState<CauldronPath[]>([]);
+
+  // Fetch cauldrons, network edges and node index from the backend proxy on mount
+  // We keep a separate nodesArray so we can resolve coordinates for edges
+  // that reference nodes which are not in the cauldrons list (e.g. markets).
+  const [nodesArray, setNodesArray] = useState<any[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function load() {
+      try {
+        const [cRes, nRes, nodesRes] = await Promise.all([
+          fetch('/api/Information/cauldrons'),
+          fetch('/api/Information/network'),
+          fetch('/api/Information/nodes'),
+        ]);
+
+        const cauldronsJson = cRes.ok ? await cRes.json() : null;
+        const networkJson = nRes.ok ? await nRes.json() : null;
+        const nodesJson = nodesRes.ok ? await nodesRes.json() : null;
+
+        // cauldrons endpoint is expected to return an array
+        const cauldronsArr = Array.isArray(cauldronsJson) ? cauldronsJson : (cauldronsJson && cauldronsJson.nodes) || [];
+
+        const mappedCauldrons: Cauldron[] = cauldronsArr.map((c: any) => ({
+          id: c.id,
+          name: c.name || c.id,
+          longitude: c.longitude != null ? Number(c.longitude) : null,
+          latitude: c.latitude != null ? Number(c.latitude) : null,
+          capacity: c.max_volume != null ? Number(c.max_volume) : 0,
+          // preserve unknowns — UI uses fillPercent; if not present default to 0
+          currentFill: c.currentFill != null ? Number(c.currentFill) : 0,
+          fillPercent: c.fillPercent != null ? Number(c.fillPercent) : 0,
+          metadata: c,
+        }));
+
+        // Build a lookup of nodes returned by /api/Information/nodes
+        const nodesArr = Array.isArray(nodesJson) ? nodesJson : (nodesJson && nodesJson.nodes) || [];
+        const nodesLookup = new Map<string, any>();
+        for (const n of nodesArr) {
+          if (!n || !n.id) continue;
+          nodesLookup.set(n.id, n);
+        }
+
+        // network endpoint expected shape: { edges: [...] }
+        const edges = (networkJson && networkJson.edges) || [];
+        const mappedPaths: CauldronPath[] = edges.map((e: any, idx: number) => ({
+          id: e.id || `edge-${idx}-${e.from}-${e.to}`,
+          from: e.from,
+          to: e.to,
+          bandwidth: e.bandwidth != null ? Number(e.bandwidth) : undefined,
+          latency: e.travel_time_minutes != null ? Number(e.travel_time_minutes) : undefined,
+          // allow pulsing for short travel times as a heuristic, otherwise false
+          shouldPulse: typeof e.travel_time_minutes === 'number' ? e.travel_time_minutes < 10 : false,
+          metadata: e,
+        }));
+
+        if (!mounted) return;
+        setCauldrons(mappedCauldrons);
+        setPaths(mappedPaths);
+        setNodesArray(nodesArr);
+      } catch (err) {
+        // keep console error; UI will render gracefully with empty arrays
+        // consumer can add user-visible error handling if desired
+        // eslint-disable-next-line no-console
+        console.error('Failed to load map data', err);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Initialize map once
   useEffect(() => {
@@ -136,47 +159,94 @@ function NetworkMap() {
     };
   }, []);
 
-  // Update map when data changes
+  // Update map when data changes (include nodesArray so edges render once
+  // node coordinates are available).
   useEffect(() => {
     if (!map.current) return;
 
     map.current.on('load', () => {
       addPaths();
       addCauldrons();
+      addOtherNodes();
+      fitMapToNodes();
     });
 
     if (map.current.loaded()) {
       addPaths();
       addCauldrons();
+      addOtherNodes();
+      fitMapToNodes();
     }
-  }, [cauldrons, paths]);
+  }, [cauldrons, paths, nodesArray]);
 
   // Draw connection lines between cauldrons
   const addPaths = () => {
     if (!map.current) return;
 
-    const pathFeatures = paths.map(path => {
-      const fromCauldron = cauldrons.find(c => c.id === path.from);
-      const toCauldron = cauldrons.find(c => c.id === path.to);
+    // Resolve coordinates for a node id by preferring cauldrons state and
+    // falling back to the nodesArray fetched from /api/Information/nodes.
+    const resolveCoords = (id: string) => {
+      const fromC = cauldrons.find((c) => c.id === id);
+      if (fromC && fromC.latitude != null && fromC.longitude != null)
+        return { latitude: fromC.latitude, longitude: fromC.longitude };
+      const n = nodesArray.find((x) => x.id === id);
+      if (n && n.latitude != null && n.longitude != null)
+        return { latitude: Number(n.latitude), longitude: Number(n.longitude) };
+      return null;
+    };
 
-      if (!fromCauldron || !toCauldron) return null;
+    // Debug: compute coordinate frequency to detect any common convergence point
+    const coordCounts = new Map<string, number>();
+    for (const path of paths) {
+      const a = resolveCoords(path.from);
+      const b = resolveCoords(path.to);
+      if (a) {
+        const key = `${a.latitude},${a.longitude}`;
+        coordCounts.set(key, (coordCounts.get(key) || 0) + 1);
+      }
+      if (b) {
+        const key = `${b.latitude},${b.longitude}`;
+        coordCounts.set(key, (coordCounts.get(key) || 0) + 1);
+      }
+    }
+    // eslint-disable-next-line no-console
+    console.debug('[NetworkMap] coord frequency (top 5):', Array.from(coordCounts.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5));
 
-      return {
-        type: 'Feature' as const,
-        properties: {
-          id: path.id,
-          bandwidth: path.bandwidth,
-          shouldPulse: path.shouldPulse || false
-        },
-        geometry: {
-          type: 'LineString' as const,
-          coordinates: [
-            [fromCauldron.longitude, fromCauldron.latitude],
-            [toCauldron.longitude, toCauldron.latitude]
-          ]
-        }
-      };
-    }).filter(Boolean);
+    const pathFeatures = paths
+      .map((path) => {
+        const fromCoords = resolveCoords(path.from);
+        const toCoords = resolveCoords(path.to);
+        if (!fromCoords || !toCoords) return null;
+
+        return {
+          type: 'Feature' as const,
+          properties: {
+            id: path.id,
+            bandwidth: path.bandwidth,
+            shouldPulse: path.shouldPulse || false,
+          },
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: [
+              [fromCoords.longitude, fromCoords.latitude],
+              [toCoords.longitude, toCoords.latitude],
+            ],
+          },
+        };
+      })
+      .filter(Boolean);
+
+    // If the source already exists, just update its data. Otherwise create
+    // the source and layers once.
+    if (map.current.getSource('paths')) {
+      try {
+        const src: any = map.current.getSource('paths');
+        src.setData({ type: 'FeatureCollection', features: pathFeatures as any[] });
+      } catch (e) {
+        // ignore setData errors
+      }
+      return;
+    }
 
     if (!map.current.getSource('paths')) {
       map.current.addSource('paths', {
@@ -267,6 +337,63 @@ function NetworkMap() {
     }
   };
 
+  // Fit the map view to include all nodes (cauldrons + other nodes). If
+  // there is only one node, center on it with a reasonable zoom level.
+  const fitMapToNodes = () => {
+    if (!map.current) return;
+
+    const coords: Array<{ latitude: number; longitude: number }> = [];
+
+    for (const c of cauldrons) {
+      if (c.latitude == null || c.longitude == null) continue;
+      coords.push({ latitude: c.latitude, longitude: c.longitude });
+    }
+
+    for (const n of nodesArray) {
+      if (!n) continue;
+      const lat = n.latitude != null ? Number(n.latitude) : null;
+      const lon = n.longitude != null ? Number(n.longitude) : null;
+      if (lat == null || lon == null) continue;
+      // skip if already represented by a cauldron (avoid duplicates)
+      if (cauldrons.find((c) => c.id === n.id)) continue;
+      coords.push({ latitude: lat, longitude: lon });
+    }
+
+    if (coords.length === 0) return;
+
+    if (coords.length === 1) {
+      const p = coords[0];
+      try {
+        map.current.flyTo({ center: [p.longitude, p.latitude], zoom: 12, speed: 0.8 });
+      } catch (e) {
+        // ignore
+      }
+      return;
+    }
+
+    let minLat = Infinity,
+      minLon = Infinity,
+      maxLat = -Infinity,
+      maxLon = -Infinity;
+
+    for (const p of coords) {
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.longitude < minLon) minLon = p.longitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+      if (p.longitude > maxLon) maxLon = p.longitude;
+    }
+
+    // add a small padding to bounds
+    const sw: [number, number] = [minLon, minLat];
+    const ne: [number, number] = [maxLon, maxLat];
+
+    try {
+      map.current.fitBounds([sw, ne], { padding: 80, maxZoom: 14, duration: 800 });
+    } catch (e) {
+      // ignore
+    }
+  };
+
   // Create pill-shaped markers for cauldrons
   const addCauldrons = () => {
     if (!map.current) return;
@@ -275,6 +402,8 @@ function NetworkMap() {
     markersRef.current = [];
 
     cauldrons.forEach(cauldron => {
+      // Skip markers for nodes without valid coordinates
+      if (cauldron.latitude == null || cauldron.longitude == null) return;
       const el = document.createElement('div');
       el.className = 'cauldron-marker';
       el.style.width = '40px';
@@ -362,6 +491,38 @@ function NetworkMap() {
 
       markersRef.current.push(marker);
     });
+  };
+
+  // Render small markers for other nodes (markets/placeholders) that are
+  // present in nodesArray but not in the cauldrons list. This helps reveal
+  // any node that edges are pointing to (so you can see the mysterious point).
+  const addOtherNodes = () => {
+    if (!map.current) return;
+
+    // reuse markersRef for cleanup; we already cleared it in addCauldrons
+    // so adding here will include both cauldrons and other nodes.
+    const cauldronIds = new Set(cauldrons.map((c) => c.id));
+
+    for (const n of nodesArray) {
+      if (!n || !n.id) continue;
+      if (cauldronIds.has(n.id)) continue; // already rendered as cauldron
+      if (n.latitude == null || n.longitude == null) continue;
+
+      const el = document.createElement('div');
+      el.className = 'node-marker';
+      el.style.width = '12px';
+      el.style.height = '12px';
+      el.style.borderRadius = '6px';
+      el.style.background = '#00bcd4';
+      el.style.border = '2px solid white';
+      el.title = String(n.id);
+
+      const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+        .setLngLat([Number(n.longitude), Number(n.latitude)])
+        .addTo(map.current);
+
+      markersRef.current.push(marker);
+    }
   };
 
   return (
