@@ -20,14 +20,17 @@ class Cauldron {
 	 * @param {number} params.latitude
 	 * @param {number} params.longitude
 	 * @param {number} params.max_volume
+	 * @param {number} params.cauldron_level
 	 */
-	constructor({ id, name, latitude, longitude, max_volume }) {
+	constructor({ id, name, latitude, longitude, max_volume, cauldron_level }) {
 		this.id = id || null;
 		this.name = name || null;
 		this.latitude = typeof latitude === "string" ? Number(latitude) : latitude;
 		this.longitude = typeof longitude === "string" ? Number(longitude) : longitude;
 		// store as number under camelCase property for code clarity
 		this.maxVolume = typeof max_volume === "undefined" ? null : Number(max_volume);
+		// current cauldron level (optional)
+		this.cauldronLevel = typeof cauldron_level === "undefined" ? null : Number(cauldron_level);
 
 		// adjacency lists (store node ids)
 		this.fromNodeIds = [];
@@ -53,6 +56,7 @@ class Cauldron {
 			latitude: this.latitude,
 			longitude: this.longitude,
 			max_volume: this.maxVolume,
+			cauldron_level: this.cauldronLevel,
 			from_node_ids: Array.isArray(this.fromNodeIds) ? this.fromNodeIds.slice() : [],
 			to_node_ids: Array.isArray(this.toNodeIds) ? this.toNodeIds.slice() : [],
 		};
@@ -119,6 +123,21 @@ class Cauldron {
 		if (!nodeId) return;
 		if (!this.toNodeIds) this.toNodeIds = [];
 		if (!this.toNodeIds.includes(nodeId)) this.toNodeIds.push(nodeId);
+	}
+
+	/**
+	 * Get current cauldron level (may be null if unknown)
+	 */
+	getCauldronLevel() {
+		return this.cauldronLevel;
+	}
+
+	/**
+	 * Set current cauldron level (numeric). Accepts string or number.
+	 */
+	setCauldronLevel(level) {
+		if (typeof level === "string") level = Number(level);
+		this.cauldronLevel = typeof level === "undefined" ? null : level;
 	}
 }
 

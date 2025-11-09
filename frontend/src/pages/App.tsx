@@ -5,6 +5,7 @@ import ApiRequest from "../components/apiRequest";
 function App() {
   const [urlInput, setUrlInput] = useState<string>("/api/Data/current");
   const [requestUrl, setRequestUrl] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   return (
     <>
@@ -21,14 +22,17 @@ function App() {
         />
         <button
           style={{ marginLeft: 8 }}
-          onClick={() => setRequestUrl(urlInput)}
+          onClick={() => {
+            setRequestUrl(urlInput);
+            setReload((r) => r + 1);
+          }}
         >
           Load
         </button>
       </div>
 
       {requestUrl ? (
-        <ApiRequest requestUrl={requestUrl} />
+        <ApiRequest requestUrl={requestUrl} reload={reload} />
       ) : (
         <div>Enter a URL and click Load to view cauldron data.</div>
       )}

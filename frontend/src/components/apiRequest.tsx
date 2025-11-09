@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import "../styles/App.css";
 
-export default function ApiRequest({ requestUrl }: { requestUrl?: string }) {
+export default function ApiRequest({
+  requestUrl,
+  reload,
+}: {
+  requestUrl?: string;
+  reload?: number;
+}) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +45,7 @@ export default function ApiRequest({ requestUrl }: { requestUrl?: string }) {
     return () => {
       mounted = false;
     };
-  }, [requestUrl]);
+  }, [requestUrl, reload]);
 
   return (
     <section className="cauldron-levels">
