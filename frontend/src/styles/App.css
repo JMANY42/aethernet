@@ -9,7 +9,8 @@ html,
 body {
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  /* allow page scrolling so homepage sections (and the poyo runner) can become visible */
+  overflow: auto;
   margin: 0;
   padding: 0;
 }

@@ -74,18 +74,45 @@ const Homepage = () => {
             textAlign: 'left',
             textShadow: '2px 2px 4px rgba(0, 0, 0, 0.4)',
           }}>
-          <h1>Welcome to Aethernet</h1>
-          <p>This is the homepage</p>
+          <h1>Aethernet</h1>
+          <p>Your command center for tracking every bubble, drip,<br></br> and suspicious disappearance across Poyo's entire operation.</p>
         </div>
 
-        <div
+<div
           style={{
             color: 'white',
             textAlign: 'left',
             textShadow: '2px 2px 4px rgba(0, 0, 0, 0.4)',
           }}>
-          <h2>Scroll Down</h2>
-          <p>The background image stays fixed while you scroll</p>
+          <h2>What does Aethernet do?</h2>
+          
+          <div style={{ marginBottom: '16px' }}>
+            <p>✦ Visualizes the Entire Potion Network</p>
+            <p style={{ fontSize: '1.1em', opacity: 0.9, marginLeft: '24px' }}>
+              See all cauldrons, potion levels, and the Enchanted Market sales point on an interactive map
+            </p>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <p>✦ Travels Through Time</p>
+            <p style={{ fontSize: '1.1em', opacity: 0.9, marginLeft: '24px' }}>
+              Replay historical potion levels and transport ticket activity from any day
+            </p>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <p>✦ Detects the Undetectable</p>
+            <p style={{ fontSize: '1.1em', opacity: 0.9, marginLeft: '24px' }}>
+              Automatically matches tickets to drain events and identifies volume discrepancies
+            </p>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <p>✦ Implements Smart Ticket Matching</p>
+            <p style={{ fontSize: '1.1em', opacity: 0.9, marginLeft: '24px' }}>
+              Dynamic algorithms adapt to changing data and flag suspicious activity in real-time
+            </p>
+          </div>
         </div>
 
         <div
@@ -100,8 +127,8 @@ const Homepage = () => {
             justifyContent: 'center',
             minHeight: '60vh',
           }}>
-          <h2>Bottom Section</h2>
-          <p>You've reached the bottom of the page</p>
+          <h2>Ready to Investigate?</h2>
+          <p>Your monitoring station is live. The data is flowing. What will you discover?</p>
 
           {/* centered poyo runner */}
           <div className="poyo-container" aria-hidden={!isAtBottom}>
