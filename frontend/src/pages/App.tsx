@@ -27,11 +27,13 @@ function App() {
       <div className="app">
         <nav className={`navigation ${isScrolled ? 'scrolled' : ''}`}>
           <div className="nav-content">
-            <img 
-              src={isScrolled ? cloudLogo : whiteCloudLogo} 
-              alt="Cloud Logo" 
-              className="nav-logo"
-            />
+            <Link to="/">
+              <img 
+                src={isScrolled ? cloudLogo : whiteCloudLogo} 
+                alt="Cloud Logo" 
+                className="nav-logo"
+              />
+            </Link>
             <ul>
               <li>
                 <Link to="/">Home</Link>

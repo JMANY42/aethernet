@@ -82,10 +82,16 @@
 
 .nav-logo {
   height: 1.9rem;
-  margin-left: -1rem;
+  margin-left: -2.5rem;
   transition: all 0.3s ease;
-  align-items: center;
-  margin-bottom: -.5rem;
+  cursor: pointer;
+  opacity: 0.9;
+  margin-top: .5rem;
+}
+
+.nav-logo:hover {
+  opacity: 1;
+  transform: scale(1.05);
 }
 
 .navigation ul {
@@ -109,7 +115,7 @@
   transition: color 0.3s ease;
   font-size: 1.25rem;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  font-weight: 1000;
+  font-weight: 500;
 }
 
 .navigation.scrolled a {

@@ -1,3 +1,6 @@
+# Ignore json
+*.json
+
 # Logs
 logs
 *.log
