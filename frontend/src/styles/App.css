@@ -30,8 +30,9 @@
 }
 
 .homepage h1 {
-  font-size: 3rem;
-  font-weight: 600;
+  font-size: 3.5rem;
+  font-weight: 700;
+  font-family: 'Times New Roman', serif;
   margin-bottom: 1rem;
   letter-spacing: -0.01em;
   line-height: 1.2;
@@ -46,7 +47,8 @@
 }
 
 .homepage p {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
+  font-family: 'Arial', serif;
   line-height: 1.6;
   font-weight: 400;
   letter-spacing: 0;

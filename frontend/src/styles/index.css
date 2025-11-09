@@ -1,4 +1,10 @@
 :root {
+  /*
+    File: src/styles/index.css
+    Purpose: Global base styles and sensible defaults.
+    - Sets system font fallbacks, color scheme defaults, and base element styles.
+    - Keep universal/global styles here (resets, typography defaults, basic button/link styles).
+  */
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
