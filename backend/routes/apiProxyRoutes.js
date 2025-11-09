@@ -50,6 +50,32 @@ router.get("/Information/graph/neighbors/directed/:nodeId", (req, res) => {
   return forwardGet(`/api/Information/graph/neighbors/directed/${encodeURIComponent(nodeId)}`, res);
 });
 
+// GET /api/Information/graph/shortestPath/{fromId}/{toId}
+// Uses the in-memory graph built on server startup and returns the shortestPath output.
+router.get('/Information/graph/shortestPath/:fromId/:toId', (req, res) => {
+  const { fromId, toId } = req.params;
+
+  // Retrieve graph from shared graphStore first, fallback to app.locals.graph
+  let graph = null;
+  try {
+    const { getGraph } = require('../map/graphStore');
+    graph = getGraph();
+  } catch (e) {
+    // ignore and fallback
+  }
+  if (!graph && req.app && req.app.locals) graph = req.app.locals.graph;
+
+  if (!graph) return res.status(503).json({ error: 'Graph not available' });
+
+  try {
+    const result = graph.shortestPath(fromId, toId);
+    if (!result) return res.status(404).json({ error: 'No path found' });
+    return res.json(result);
+  } catch (err) {
+    return res.status(500).json({ error: 'Error computing shortest path', details: String(err) });
+  }
+});
+
 // GET /api/Tickets
 router.get("/Tickets", (req, res) => {
   return forwardGet(`/api/Tickets`, res);
