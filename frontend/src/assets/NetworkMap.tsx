@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import GraphPopup from './GraphPopup.tsx'
+import ReactDOMServer from "react-dom/server";
+import ReactDOM from "react-dom/client";
 
 /**
  * Cauldron node in the network
@@ -35,10 +38,205 @@ interface CauldronPath {
   };
 }
 
+interface CauldronLevels {
+  cauldron_001: number,
+  cauldron_002: number,
+  cauldron_003: number,
+  cauldron_004: number,
+  cauldron_005: number,
+  cauldron_006: number,
+  cauldron_007: number,
+  cauldron_008: number,
+  cauldron_009: number,
+  cauldron_010: number,
+  cauldron_011: number,
+  cauldron_012: number
+}
+
+interface HistoricalData {
+  timestamp: string;
+  cauldron_levels: CauldronLevels;
+}
+
+const cauldronLevels: HistoricalData[] = [
+    {
+        "timestamp": "2025-11-09T03:52:00+00:00",
+        "cauldron_levels": {
+            "cauldron_001": 544.02,
+            "cauldron_002": 165.6,
+            "cauldron_003": 782.75,
+            "cauldron_004": 453.25,
+            "cauldron_005": 329.26,
+            "cauldron_006": 264.61,
+            "cauldron_007": 860.78,
+            "cauldron_008": 51.14,
+            "cauldron_009": 949.73,
+            "cauldron_010": 432.81,
+            "cauldron_011": 285.16,
+            "cauldron_012": 311.41
+        }
+    },
+    {
+        "timestamp": "2025-11-09T03:53:00+00:00",
+        "cauldron_levels": {
+            "cauldron_001": 544.27,
+            "cauldron_002": 165.66,
+            "cauldron_003": 783.12,
+            "cauldron_004": 453.14,
+            "cauldron_005": 329.45,
+            "cauldron_006": 264.14,
+            "cauldron_007": 860.87,
+            "cauldron_008": 50.8,
+            "cauldron_009": 949.94,
+            "cauldron_010": 433.08,
+            "cauldron_011": 285.33,
+            "cauldron_012": 311.47
+        }
+    },
+    {
+        "timestamp": "2025-11-09T03:54:00+00:00",
+        "cauldron_levels": {
+            "cauldron_001": 544.4,
+            "cauldron_002": 165.64,
+            "cauldron_003": 782.93,
+            "cauldron_004": 453.08,
+            "cauldron_005": 329.37,
+            "cauldron_006": 263.67,
+            "cauldron_007": 860.92,
+            "cauldron_008": 50.46,
+            "cauldron_009": 950,
+            "cauldron_010": 433.02,
+            "cauldron_011": 285.39,
+            "cauldron_012": 311.66
+        }
+    },
+    {
+        "timestamp": "2025-11-09T03:55:00+00:00",
+        "cauldron_levels": {
+            "cauldron_001": 544.7,
+            "cauldron_002": 165.71,
+            "cauldron_003": 782.73,
+            "cauldron_004": 453.11,
+            "cauldron_005": 329.52,
+            "cauldron_006": 263.2,
+            "cauldron_007": 860.76,
+            "cauldron_008": 50.12,
+            "cauldron_009": 949.79,
+            "cauldron_010": 433.05,
+            "cauldron_011": 285.41,
+            "cauldron_012": 311.6
+        }
+    },
+    {
+        "timestamp": "2025-11-09T03:56:00+00:00",
+        "cauldron_levels": {
+            "cauldron_001": 544.98,
+            "cauldron_002": 165.69,
+            "cauldron_003": 782.79,
+            "cauldron_004": 453.23,
+            "cauldron_005": 329.64,
+            "cauldron_006": 262.73,
+            "cauldron_007": 860.6,
+            "cauldron_008": 49.78,
+            "cauldron_009": 950,
+            "cauldron_010": 433.05,
+            "cauldron_011": 285.36,
+            "cauldron_012": 311.61
+        }
+    },
+    {
+        "timestamp": "2025-11-09T03:57:00+00:00",
+        "cauldron_levels": {
+            "cauldron_001": 544.81,
+            "cauldron_002": 165.67,
+            "cauldron_003": 782.95,
+            "cauldron_004": 453.16,
+            "cauldron_005": 329.82,
+            "cauldron_006": 262.26,
+            "cauldron_007": 860.89,
+            "cauldron_008": 49.44,
+            "cauldron_009": 950,
+            "cauldron_010": 433.12,
+            "cauldron_011": 285.44,
+            "cauldron_012": 311.69
+        }
+    },
+    {
+        "timestamp": "2025-11-09T03:58:00+00:00",
+        "cauldron_levels": {
+            "cauldron_001": 545.05,
+            "cauldron_002": 165.79,
+            "cauldron_003": 782.72,
+            "cauldron_004": 453.35,
+            "cauldron_005": 330.01,
+            "cauldron_006": 261.79,
+            "cauldron_007": 860.61,
+            "cauldron_008": 49.1,
+            "cauldron_009": 949.79,
+            "cauldron_010": 433.37,
+            "cauldron_011": 285.48,
+            "cauldron_012": 311.69
+        }
+    },
+    {
+        "timestamp": "2025-11-09T03:59:00+00:00",
+        "cauldron_levels": {
+            "cauldron_001": 545.03,
+            "cauldron_002": 165.91,
+            "cauldron_003": 782.58,
+            "cauldron_004": 453.59,
+            "cauldron_005": 329.96,
+            "cauldron_006": 261.32,
+            "cauldron_007": 860.68,
+            "cauldron_008": 49.17,
+            "cauldron_009": 949.5,
+            "cauldron_010": 433.54,
+            "cauldron_011": 285.53,
+            "cauldron_012": 311.61
+        }
+    },
+    {
+        "timestamp": "2025-11-09T04:00:00+00:00",
+        "cauldron_levels": {
+            "cauldron_001": 544.95,
+            "cauldron_002": 165.89,
+            "cauldron_003": 782.41,
+            "cauldron_004": 453.48,
+            "cauldron_005": 329.95,
+            "cauldron_006": 260.85,
+            "cauldron_007": 860.45,
+            "cauldron_008": 49.26,
+            "cauldron_009": 950,
+            "cauldron_010": 433.42,
+            "cauldron_011": 285.63,
+            "cauldron_012": 311.75
+        }
+    },
+    {
+        "timestamp": "2025-11-09T04:01:00+00:00",
+        "cauldron_levels": {
+            "cauldron_001": 544.86,
+            "cauldron_002": 165.89,
+            "cauldron_003": 782.32,
+            "cauldron_004": 453.55,
+            "cauldron_005": 330.1,
+            "cauldron_006": 260.38,
+            "cauldron_007": 860.94,
+            "cauldron_008": 49.33,
+            "cauldron_009": 950,
+            "cauldron_010": 433.58,
+            "cauldron_011": 285.62,
+            "cauldron_012": 311.82
+        }
+    }
+]
+
+
+
 // TODO: Replace with API call - GET /api/cauldrons
 const sampleCauldrons: Cauldron[] = [
   {
-    id: 'cauldron-1',
+    id: 'cauldron_001',
     name: 'North Hub',
     longitude: -74.006,
     latitude: 40.7128,
@@ -47,7 +245,7 @@ const sampleCauldrons: Cauldron[] = [
     fillPercent: 75
   },
   {
-    id: 'cauldron-2',
+    id: 'cauldron_002',
     name: 'East Station',
     longitude: -73.935,
     latitude: 40.730,
@@ -56,7 +254,7 @@ const sampleCauldrons: Cauldron[] = [
     fillPercent: 40
   },
   {
-    id: 'cauldron-3',
+    id: 'cauldron_003',
     name: 'West Node',
     longitude: -74.075,
     latitude: 40.680,
@@ -339,18 +537,49 @@ function NetworkMap() {
         pillContainer.style.animation = 'pulse-warning 1.5s infinite';
       }
 
-      const popupContent = `
-        <div style="padding: 8px;">
-          <strong>${cauldron.name}</strong><br/>
-          <span style="color: #888;">ID: ${cauldron.id}</span><br/>
-          Fill Level: <strong>${cauldron.fillPercent}%</strong><br/>
-          Current: ${cauldron.currentFill} / ${cauldron.capacity}<br/>
-          Available: ${cauldron.capacity - cauldron.currentFill}<br/>
-          Location: [${cauldron.longitude.toFixed(4)}, ${cauldron.latitude.toFixed(4)}]
-        </div>
-      `;
+      // const popupContent = `
+      //   <div style="padding: 8px;">
+      //     <strong>${cauldron.name}</strong><br/>
+      //     <span style="color: #888;">ID: ${cauldron.id}</span><br/>
+      //     Fill Level: <strong>${cauldron.fillPercent}%</strong><br/>
+      //     Current: ${cauldron.currentFill} / ${cauldron.capacity}<br/>
+      //     Available: ${cauldron.capacity - cauldron.currentFill}<br/>
+      //     Location: [${cauldron.longitude.toFixed(4)}, ${cauldron.latitude.toFixed(4)}]
+      //   </div>
+      // `;
 
-      const popup = new mapboxgl.Popup({ offset: 30 }).setHTML(popupContent);
+      const key: keyof CauldronLevels = cauldron.id as keyof CauldronLevels;
+      // console.log("cauldron id",cauldron.id);
+      // console.log(key);
+      const levels = cauldronLevels.map((obj) => obj.cauldron_levels[key]);
+      // console.log(cauldronLevels.map((obj) => obj.cauldron_levels)[0][key]);
+      console.log(levels);
+      console.log(typeof levels)
+      // console.log(cauldronLevels);
+      // const popupContent = <GraphPopup data={levels}></GraphPopup>
+
+      // Create a container for the popup
+      const popupNode = document.createElement("div");
+      // popupNode.style.width = "800px";
+      // popupNode.style.height = "400px";      // Mount the React component into it
+      const root = ReactDOM.createRoot(popupNode);
+
+      const width = 400;
+      const height = 250;
+      console.log("cauldron", cauldron);
+      root.render(<GraphPopup data={levels} maxFill={cauldron.capacity} name={cauldron.name} width={width} height={height}/>);
+
+      // Use setDOMContent instead of setHTML
+      const popup = new mapboxgl.Popup({ offset: 30,   maxWidth: '800px'  // Add this to prevent the popup from constraining the content
+ }).setDOMContent(popupNode);
+
+const styleTag = document.createElement('style');
+styleTag.textContent = `
+  .mapboxgl-popup-close-button {
+    color: #ff0000;
+  }
+`;
+      document.head.appendChild(styleTag);
 
       const marker = new mapboxgl.Marker({
         element: el,
