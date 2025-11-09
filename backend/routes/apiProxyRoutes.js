@@ -5,7 +5,7 @@ const { forwardGet } = require("../middleware/apiProxy");
 // The routes below mirror the external service and proxy responses.
 
 // GET /api/Data
-// Accepts optional query parameters (e.g. start_date, end_date) and forwards them
+// Accepts optional query parameters (e.g. start_date, end_date, date) and forwards them
 router.get("/Data", (req, res) => {
   // Support two behaviors:
   // 1) Existing: forward any incoming query params (start_date/end_date etc.)

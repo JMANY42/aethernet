@@ -182,6 +182,7 @@ class Graph {
    * Returns null if no path.
    */
   shortestPath(startId, endId) {
+    // allow shortest path traversal in both directions: follow outgoing edges and incoming edges
     if (!this.adjacency.has(startId) || !this.adjacency.has(endId)) return null;
 
     const dist = new Map();
@@ -210,7 +211,25 @@ class Graph {
 
       if (u === endId) break;
 
-      const neighbors = this.adjacency.get(u) || [];
+      // Build neighbor list including outgoing edges (u -> v) and incoming edges (w -> u)
+      const neighbors = [];
+
+      // outgoing
+      const outList = this.adjacency.get(u) || [];
+      for (const { to, travel_time_minutes } of outList) {
+        neighbors.push({ to, travel_time_minutes: Number(travel_time_minutes) });
+      }
+
+      // incoming: edges where some node -> u, we can traverse from u to that node as well
+      for (const [fromId, edges] of this.adjacency.entries()) {
+        for (const { to, travel_time_minutes } of edges) {
+          if (to === u) {
+            // allow reverse traversal from u to fromId with same weight
+            neighbors.push({ to: fromId, travel_time_minutes: Number(travel_time_minutes) });
+          }
+        }
+      }
+
       for (const { to, travel_time_minutes } of neighbors) {
         const alt = dist.get(u) + Number(travel_time_minutes);
         if (alt < dist.get(to)) {

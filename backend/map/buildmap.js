@@ -2,6 +2,7 @@ const axios = require("axios");
 const { Graph } = require("./map");
 const Cauldron = require("./cauldron");
 const Market = require("./market");
+const Courier = require("./courier");
 
 // Use 127.0.0.1 to avoid potential IPv6 localhost (::1) resolution issues on some platforms
 const BASE_URL = 'http://127.0.0.1:' + (process.env.PORT || '5000');
@@ -21,6 +22,22 @@ async function fetchNetwork(api) {
   return res.data;
 }
 
+async function fetchCouriers(api) {
+  // upstream endpoint is lowercase 'couriers' per other endpoints
+  const res = await api.get("/api/Information/couriers");
+  const data = res.data;
+
+  // Normalize into Courier instances
+  if (Array.isArray(data)) {
+    return data.map((c) => Courier.fromJSON(c));
+  }
+
+  // If it's a single object, return it wrapped in an array
+  if (data && typeof data === "object") return [Courier.fromJSON(data)];
+
+  return [];
+}
+
 /**
  * Build and return a Graph instance populated with nodes and edges fetched
  * from the proxy (or provided baseUrl).
@@ -32,11 +49,12 @@ async function buildmap(baseUrl) {
   const base = baseUrl || BASE_URL;
   const api = axios.create({ baseURL: base, timeout: 15000 });
 
-  // Fetch remote data in parallel
-  const [cauldronsData, marketData, networkData] = await Promise.all([
+  // Fetch remote data in parallel (including couriers)
+  const [cauldronsData, marketData, networkData, couriersData] = await Promise.all([
     fetchCauldrons(api),
     fetchMarket(api),
     fetchNetwork(api),
+    fetchCouriers(api),
   ]);
 
   // Normalize nodes into instances
@@ -47,7 +65,12 @@ async function buildmap(baseUrl) {
   else if (marketData && typeof marketData === "object") marketInstance = Market.fromJSON(marketData);
 
   // Build graph
-  const graph = Graph.fromJSON(networkData || {}, [...cauldrons, marketInstance].filter(Boolean));
+  // Include courier instances as nodes in the graph so they can be looked up via graph.getNode(id)
+  const couriers = Array.isArray(couriersData) ? couriersData : [];
+
+  const nodesToAdd = [...cauldrons, marketInstance, ...couriers].filter(Boolean);
+
+  const graph = Graph.fromJSON(networkData || {}, nodesToAdd);
 
   return graph;
 }
@@ -56,6 +79,7 @@ async function buildmap(baseUrl) {
 // let the server control when the graph is constructed to avoid double-builds
 module.exports = {
   buildmap,
+  fetchCouriers,
 };
 
 
