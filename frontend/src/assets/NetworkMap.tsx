@@ -58,181 +58,20 @@ interface HistoricalData {
   cauldron_levels: CauldronLevels;
 }
 
-const cauldronLevels: HistoricalData[] = [
-    {
-        "timestamp": "2025-11-09T03:52:00+00:00",
-        "cauldron_levels": {
-            "cauldron_001": 544.02,
-            "cauldron_002": 165.6,
-            "cauldron_003": 782.75,
-            "cauldron_004": 453.25,
-            "cauldron_005": 329.26,
-            "cauldron_006": 264.61,
-            "cauldron_007": 860.78,
-            "cauldron_008": 51.14,
-            "cauldron_009": 949.73,
-            "cauldron_010": 432.81,
-            "cauldron_011": 285.16,
-            "cauldron_012": 311.41
-        }
-    },
-    {
-        "timestamp": "2025-11-09T03:53:00+00:00",
-        "cauldron_levels": {
-            "cauldron_001": 544.27,
-            "cauldron_002": 165.66,
-            "cauldron_003": 783.12,
-            "cauldron_004": 453.14,
-            "cauldron_005": 329.45,
-            "cauldron_006": 264.14,
-            "cauldron_007": 860.87,
-            "cauldron_008": 50.8,
-            "cauldron_009": 949.94,
-            "cauldron_010": 433.08,
-            "cauldron_011": 285.33,
-            "cauldron_012": 311.47
-        }
-    },
-    {
-        "timestamp": "2025-11-09T03:54:00+00:00",
-        "cauldron_levels": {
-            "cauldron_001": 544.4,
-            "cauldron_002": 165.64,
-            "cauldron_003": 782.93,
-            "cauldron_004": 453.08,
-            "cauldron_005": 329.37,
-            "cauldron_006": 263.67,
-            "cauldron_007": 860.92,
-            "cauldron_008": 50.46,
-            "cauldron_009": 950,
-            "cauldron_010": 433.02,
-            "cauldron_011": 285.39,
-            "cauldron_012": 311.66
-        }
-    },
-    {
-        "timestamp": "2025-11-09T03:55:00+00:00",
-        "cauldron_levels": {
-            "cauldron_001": 544.7,
-            "cauldron_002": 165.71,
-            "cauldron_003": 782.73,
-            "cauldron_004": 453.11,
-            "cauldron_005": 329.52,
-            "cauldron_006": 263.2,
-            "cauldron_007": 860.76,
-            "cauldron_008": 50.12,
-            "cauldron_009": 949.79,
-            "cauldron_010": 433.05,
-            "cauldron_011": 285.41,
-            "cauldron_012": 311.6
-        }
-    },
-    {
-        "timestamp": "2025-11-09T03:56:00+00:00",
-        "cauldron_levels": {
-            "cauldron_001": 544.98,
-            "cauldron_002": 165.69,
-            "cauldron_003": 782.79,
-            "cauldron_004": 453.23,
-            "cauldron_005": 329.64,
-            "cauldron_006": 262.73,
-            "cauldron_007": 860.6,
-            "cauldron_008": 49.78,
-            "cauldron_009": 950,
-            "cauldron_010": 433.05,
-            "cauldron_011": 285.36,
-            "cauldron_012": 311.61
-        }
-    },
-    {
-        "timestamp": "2025-11-09T03:57:00+00:00",
-        "cauldron_levels": {
-            "cauldron_001": 544.81,
-            "cauldron_002": 165.67,
-            "cauldron_003": 782.95,
-            "cauldron_004": 453.16,
-            "cauldron_005": 329.82,
-            "cauldron_006": 262.26,
-            "cauldron_007": 860.89,
-            "cauldron_008": 49.44,
-            "cauldron_009": 950,
-            "cauldron_010": 433.12,
-            "cauldron_011": 285.44,
-            "cauldron_012": 311.69
-        }
-    },
-    {
-        "timestamp": "2025-11-09T03:58:00+00:00",
-        "cauldron_levels": {
-            "cauldron_001": 545.05,
-            "cauldron_002": 165.79,
-            "cauldron_003": 782.72,
-            "cauldron_004": 453.35,
-            "cauldron_005": 330.01,
-            "cauldron_006": 261.79,
-            "cauldron_007": 860.61,
-            "cauldron_008": 49.1,
-            "cauldron_009": 949.79,
-            "cauldron_010": 433.37,
-            "cauldron_011": 285.48,
-            "cauldron_012": 311.69
-        }
-    },
-    {
-        "timestamp": "2025-11-09T03:59:00+00:00",
-        "cauldron_levels": {
-            "cauldron_001": 545.03,
-            "cauldron_002": 165.91,
-            "cauldron_003": 782.58,
-            "cauldron_004": 453.59,
-            "cauldron_005": 329.96,
-            "cauldron_006": 261.32,
-            "cauldron_007": 860.68,
-            "cauldron_008": 49.17,
-            "cauldron_009": 949.5,
-            "cauldron_010": 433.54,
-            "cauldron_011": 285.53,
-            "cauldron_012": 311.61
-        }
-    },
-    {
-        "timestamp": "2025-11-09T04:00:00+00:00",
-        "cauldron_levels": {
-            "cauldron_001": 544.95,
-            "cauldron_002": 165.89,
-            "cauldron_003": 782.41,
-            "cauldron_004": 453.48,
-            "cauldron_005": 329.95,
-            "cauldron_006": 260.85,
-            "cauldron_007": 860.45,
-            "cauldron_008": 49.26,
-            "cauldron_009": 950,
-            "cauldron_010": 433.42,
-            "cauldron_011": 285.63,
-            "cauldron_012": 311.75
-        }
-    },
-    {
-        "timestamp": "2025-11-09T04:01:00+00:00",
-        "cauldron_levels": {
-            "cauldron_001": 544.86,
-            "cauldron_002": 165.89,
-            "cauldron_003": 782.32,
-            "cauldron_004": 453.55,
-            "cauldron_005": 330.1,
-            "cauldron_006": 260.38,
-            "cauldron_007": 860.94,
-            "cauldron_008": 49.33,
-            "cauldron_009": 950,
-            "cauldron_010": 433.58,
-            "cauldron_011": 285.62,
-            "cauldron_012": 311.82
-        }
-    }
-]
 
 
+function findClosestTimestamp(data: HistoricalData[]): HistoricalData | null {
+  if (data.length === 0) return null;
 
+  const now = new Date();
+  
+  return data.reduce((closest, current) => {
+    const currentDiff = Math.abs(new Date(current.timestamp).getTime() - now.getTime());
+    const closestDiff = Math.abs(new Date(closest.timestamp).getTime() - now.getTime());
+    
+    return currentDiff < closestDiff ? current : closest;
+  })
+}
 // TODO: Replace with API call - GET /api/cauldrons
 const sampleCauldrons: Cauldron[] = [
   {
@@ -297,6 +136,7 @@ function NetworkMap() {
   // State populated from API
   const [cauldrons, setCauldrons] = useState<Cauldron[]>([]);
   const [paths, setPaths] = useState<CauldronPath[]>([]);
+  const [cauldronLevels, setCauldronLevels] = useState<HistoricalData[]>([]);
 
   // Fetch cauldrons, network edges and node index from the backend proxy on mount
   // We keep a separate nodesArray so we can resolve coordinates for edges
@@ -308,30 +148,41 @@ function NetworkMap() {
 
     async function load() {
       try {
-        const [cRes, nRes, nodesRes] = await Promise.all([
+        const [cRes, nRes, nodesRes, hData] = await Promise.all([
           fetch('/api/Information/cauldrons'),
           fetch('/api/Information/network'),
           fetch('/api/Information/nodes'),
+          fetch('/api/Data')
         ]);
 
         const cauldronsJson = cRes.ok ? await cRes.json() : null;
         const networkJson = nRes.ok ? await nRes.json() : null;
         const nodesJson = nodesRes.ok ? await nodesRes.json() : null;
-
+        const cauldronLevelsJson = hData.ok ? await hData.json() : null;
         // cauldrons endpoint is expected to return an array
         const cauldronsArr = Array.isArray(cauldronsJson) ? cauldronsJson : (cauldronsJson && cauldronsJson.nodes) || [];
 
-        const mappedCauldrons: Cauldron[] = cauldronsArr.map((c: any) => ({
+          const mappedCauldrons = cauldronsArr.map((c: any) => ({
           id: c.id,
           name: c.name || c.id,
           longitude: c.longitude != null ? Number(c.longitude) : null,
           latitude: c.latitude != null ? Number(c.latitude) : null,
           capacity: c.max_volume != null ? Number(c.max_volume) : 0,
           // preserve unknowns — UI uses fillPercent; if not present default to 0
-          currentFill: c.currentFill != null ? Number(c.currentFill) : 0,
+          currentFill: 0,
           fillPercent: c.fillPercent != null ? Number(c.fillPercent) : 0,
           metadata: c,
         }));
+
+              // const key: keyof CauldronLevels = cauldron.id as keyof CauldronLevels;
+
+        
+        // let mappedCauldrons = _mappedCauldrons;
+        // if (closestData) {
+        //   mappedCauldrons = _mappedCauldrons.map((c) => ({
+        //   currentFill: closestData[c.name as keyof CauldronLevels],
+        // }))
+        // }
 
         // Build a lookup of nodes returned by /api/Information/nodes
         const nodesArr = Array.isArray(nodesJson) ? nodesJson : (nodesJson && nodesJson.nodes) || [];
@@ -358,6 +209,14 @@ function NetworkMap() {
         setCauldrons(mappedCauldrons);
         setPaths(mappedPaths);
         setNodesArray(nodesArr);
+        
+        //console.log("cauldrons",cauldrons);
+        // Set cauldron levels - note that state updates are asynchronous
+        // so we log the fetched data directly, not the state variable
+        if (cauldronLevelsJson) {
+          setCauldronLevels(cauldronLevelsJson);
+          //console.log("cauldron levels loaded:", cauldronLevelsJson);
+        }
       } catch (err) {
         // keep console error; UI will render gracefully with empty arrays
         // consumer can add user-visible error handling if desired
@@ -396,7 +255,7 @@ function NetworkMap() {
     map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
 
     map.current.on('load', () => {
-      console.log('✅ Map loaded successfully!');
+      //console.log('✅ Map loaded successfully!');
     });
 
     return () => {
@@ -427,6 +286,49 @@ function NetworkMap() {
       fitMapToNodes();
     }
   }, [cauldrons, paths, nodesArray]);
+
+  // Separate effect to update cauldron markers when historical data loads
+  useEffect(() => {
+        //console.log("redrawing:", cauldronLevels);
+      //console.log(!map.current );
+      //console.log();
+    if (!map.current ) return;
+        //console.log("redrawing:", cauldronLevels);
+
+    if (cauldrons.length === 0) return;
+    
+    // Only update markers if we have cauldronLevels data      
+    //console.log("redrawing:", cauldronLevels);
+
+    if (cauldronLevels.length > 0) {
+        const closestData = findClosestTimestamp(cauldronLevels)?.cauldron_levels;
+      console.log("before:",cauldrons);
+      console.log(closestData)
+      if (closestData) {
+        console.log(cauldrons[0].id)
+        console.log(closestData[cauldrons[0].id as keyof CauldronLevels])
+
+        const newCauldrons = cauldrons.map((c) => ({
+          ...c,
+          currentFill: closestData[c.id as keyof CauldronLevels],
+          fillPercent: closestData[c.id as keyof CauldronLevels]/c.capacity * 100,
+        }));
+                    console.log("after:",newCauldrons);
+        setCauldrons(newCauldrons);
+      }
+
+      //console.log("redrawing");
+      // addCauldrons();
+    }
+  }, [cauldronLevels]);
+
+  useEffect(() => {
+  if (!map.current) return;
+  if (cauldrons.length === 0) return;
+  
+  console.log("add cauldrons", cauldrons);
+  addCauldrons();
+}, [cauldrons]);
 
   // Draw connection lines between cauldrons
   const addPaths = () => {
@@ -646,6 +548,7 @@ function NetworkMap() {
   // Create pill-shaped markers for cauldrons
   const addCauldrons = () => {
     if (!map.current) return;
+  console.log("in add cauldrons", cauldrons);
 
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
@@ -729,13 +632,13 @@ function NetworkMap() {
       // `;
 
       const key: keyof CauldronLevels = cauldron.id as keyof CauldronLevels;
-      // console.log("cauldron id",cauldron.id);
-      // console.log(key);
+      // //console.log("cauldron id",cauldron.id);
+      // //console.log(key);
       const levels = cauldronLevels.map((obj) => obj.cauldron_levels[key]);
-      // console.log(cauldronLevels.map((obj) => obj.cauldron_levels)[0][key]);
-      console.log(levels);
-      console.log(typeof levels)
-      // console.log(cauldronLevels);
+      // //console.log(cauldronLevels.map((obj) => obj.cauldron_levels)[0][key]);
+      //console.log(levels);
+      //console.log(typeof levels)
+      // //console.log(cauldronLevels);
       // const popupContent = <GraphPopup data={levels}></GraphPopup>
 
       // Create a container for the popup
@@ -746,8 +649,8 @@ function NetworkMap() {
 
       const width = 400;
       const height = 250;
-      console.log("cauldron", cauldron);
-      root.render(<GraphPopup data={levels} maxFill={cauldron.capacity} name={cauldron.name} width={width} height={height}/>);
+      //console.log("cauldron", cauldron);
+      root.render(<GraphPopup data={levels.slice(0, 1000)} maxFill={cauldron.capacity} name={cauldron.name} width={width} height={height}/>);
 
       // Use setDOMContent instead of setHTML
       const popup = new mapboxgl.Popup({ offset: 30,   maxWidth: '800px'  // Add this to prevent the popup from constraining the content

@@ -9,7 +9,7 @@ export interface GraphPopupProps {
 } 
 
 const GraphPopup = ({data = [10, 25, 15, 40, 30, 50, 45, 60, 55, 70], maxFill = 100, name, width=400, height=150}: GraphPopupProps) => {
-    console.log("from graph ", data)
+    // console.log("from graph ", data)
     const lineColor = '#570882'; // purple
     const referenceLineColor = '#b80217'; // red
     
@@ -34,7 +34,7 @@ const GraphPopup = ({data = [10, 25, 15, 40, 30, 50, 45, 60, 55, 70], maxFill = 
         value,
         reference: maxFill
     }));
-    console.log("name",name);
+    // console.log("name",name);
     return (
         <div className="w-full h-full relative flex flex-col p-4" style={{ height: height+60, width: width }}>
             <h2 className="text-center font-bold text-lg mb-4 text-black">{name}</h2>
