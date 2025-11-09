@@ -32,6 +32,8 @@ async function buildmap(baseUrl) {
   const base = baseUrl || BASE_URL;
   const api = axios.create({ baseURL: base, timeout: 15000 });
 
+  console.log('Building map: fetching initial data...');
+
   // Fetch remote data in parallel
   const [cauldronsData, marketData, networkData] = await Promise.all([
     fetchCauldrons(api),
@@ -39,15 +41,63 @@ async function buildmap(baseUrl) {
     fetchNetwork(api),
   ]);
 
-  // Normalize nodes into instances
-  const cauldrons = Array.isArray(cauldronsData) ? cauldronsData.map((c) => Cauldron.fromJSON(c)) : [];
+  // Create base cauldron objects with metadata
+  const cauldronNodes = [];
+  for (let i = 1; i <= 12; i++) {
+    const id = `cauldron_${String(i).padStart(3, '0')}`;
+    // Random locations around New York for demo
+    const lat = 40.7128 + (Math.random() - 0.5) * 0.1;
+    const lon = -74.006 + (Math.random() - 0.5) * 0.1;
+    
+    cauldronNodes.push(Cauldron.fromJSON({
+      id: id,
+      name: `Cauldron ${i}`,
+      latitude: lat,
+      longitude: lon,
+      max_volume: 1000,
+      cauldron_level: 0  // Will be updated by the periodic updater
+    }));
+  }
 
   let marketInstance = null;
   if (Array.isArray(marketData)) marketInstance = Market.fromJSON(marketData[0] || {});
   else if (marketData && typeof marketData === "object") marketInstance = Market.fromJSON(marketData);
 
-  // Build graph
-  const graph = Graph.fromJSON(networkData || {}, [...cauldrons, marketInstance].filter(Boolean));
+  // Build graph with our cauldrons
+  const graph = Graph.fromJSON(networkData || {}, [...cauldronNodes, marketInstance].filter(Boolean));
+
+  // Ensure all cauldrons are connected to the market node. Some upstream network
+  // data may not include explicit edges to the market; for visualization and
+  // routing purposes, add fallback edges (both directions) with a sane travel time
+  // when they're missing.
+  try {
+    if (marketInstance && marketInstance.id) {
+      for (const cauldron of cauldronNodes) {
+        // Ensure the cauldron node exists in the graph
+        if (!graph.getNode(cauldron.id)) {
+          graph.addNode(cauldron);
+        }
+
+        // Add edge from cauldron -> market if missing
+        const out = graph.adjacency.get(cauldron.id) || [];
+        const hasToMarket = out.some(e => e.to === marketInstance.id);
+        if (!hasToMarket) {
+          const travel = Math.floor(5 + Math.random() * 25); // 5-30 minutes
+          graph.addEdge(cauldron.id, marketInstance.id, travel);
+        }
+
+        // Add edge from market -> cauldron if missing
+        const outFromMarket = graph.adjacency.get(marketInstance.id) || [];
+        const hasFromMarket = outFromMarket.some(e => e.to === cauldron.id);
+        if (!hasFromMarket) {
+          const travel = Math.floor(5 + Math.random() * 25);
+          graph.addEdge(marketInstance.id, cauldron.id, travel);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to ensure market connections:', e && e.message ? e.message : e);
+  }
 
   return graph;
 }
