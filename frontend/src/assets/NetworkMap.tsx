@@ -86,6 +86,7 @@ function NetworkMap() {
   const [cauldrons, setCauldrons] = useState<Cauldron[]>([]);
   const [paths, setPaths] = useState<CauldronPath[]>([]);
   const [selectedTime, setSelectedTime] = useState<string>(new Date().toISOString());
+  const [cauldronLevels, setCauldronLevels] = useState<HistoricalData[]>([]);
 
   // Process API responses and update state
   const handleData = useCallback((sourceJson: any, networkJson: any, metaJson?: any) => {
@@ -127,7 +128,6 @@ function NetworkMap() {
       console.log('Mapped cauldron:', cauldron);
       return cauldron;
     });
-  const [cauldronLevels, setCauldronLevels] = useState<HistoricalData[]>([]);
 
     // Map network paths
     const edges = networkJson?.edges || [];
@@ -256,10 +256,9 @@ function NetworkMap() {
           metadata: e,
         }));
 
-        if (!mounted) return;
+        // if (!mounted) return;
         setCauldrons(mappedCauldrons);
         setPaths(mappedPaths);
-        setNodesArray(nodesArr);
         
         //console.log("cauldrons",cauldrons);
         // Set cauldron levels - note that state updates are asynchronous
@@ -400,6 +399,7 @@ function NetworkMap() {
 }, [cauldrons]);
 
   // Draw connection lines between cauldrons
+  
   const addPaths = () => {
     if (!map.current) return;
 
@@ -533,7 +533,7 @@ function NetworkMap() {
     }, 30);
 
     return () => clearInterval(interval);
-  }, [cauldrons, paths]);
+  };
 
   // Fit map view to include all nodes
   const fitMapToNodes = useCallback(() => {
