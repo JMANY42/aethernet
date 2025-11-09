@@ -7,8 +7,25 @@ const { forwardGet } = require("../middleware/apiProxy");
 // GET /api/Data
 // Accepts optional query parameters (e.g. start_date, end_date) and forwards them
 router.get("/Data", (req, res) => {
-  // Rebuild query string from incoming request so we forward parameters like start_date/end_date
-  const qs = new URLSearchParams(req.query).toString();
+  // Support two behaviors:
+  // 1) Existing: forward any incoming query params (start_date/end_date etc.)
+  // 2) Convenience: if caller provides a single `date` (unix seconds) param and
+  //    does not provide start_date/end_date, compute start_date=(date-59) and end_date=date
+  //    and forward those as query params to the upstream.
+  const incoming = { ...req.query };
+
+  if (incoming.date && !incoming.start_date && !incoming.end_date) {
+    const numeric = Number(incoming.date);
+    if (!Number.isFinite(numeric)) return res.status(400).json({ error: 'query parameter `date` must be a number (unix seconds)' });
+    const end = Math.floor(numeric);
+    const start = end - 59; // keep a 60-second window (inclusive)
+    incoming.start_date = start;
+    incoming.end_date = end;
+    delete incoming.date;
+  }
+
+  // Rebuild query string from incoming/normalized request
+  const qs = new URLSearchParams(incoming).toString();
   const path = `/api/Data${qs ? `/?${qs}` : ""}`;
   return forwardGet(path, res);
 });
@@ -20,20 +37,6 @@ router.get('/Data/current', (req, res) => {
   const now = Math.floor(Date.now() / 1000);
   const start = now - 59;
   const path = `/api/Data/?start_date=${start}&end_date=${now}`;
-  return forwardGet(path, res);
-});
-
-// GET /api/Data/at?date=<unix_seconds>
-// Single-parameter variant: callers may provide `date` (unix seconds). The route
-// will forward to the upstream endpoint as query params start_date=(date-60)&end_date=date
-router.get('/Data/at', (req, res) => {
-  const { date } = req.query;
-  if (!date) return res.status(400).json({ error: 'query parameter `date` is required (unix seconds)' });
-  const numeric = Number(date);
-  if (!Number.isFinite(numeric)) return res.status(400).json({ error: 'query parameter `date` must be a number (unix seconds)' });
-  const end = Math.floor(numeric);
-  const start = end - 59;
-  const path = `/api/Data/?start_date=${start}&end_date=${end}`;
   return forwardGet(path, res);
 });
 
