@@ -3,6 +3,9 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import TimelineControl from './TimelineControl';
 import '../styles/TimelineControl.css';
+import GraphPopup from './GraphPopup.tsx'
+import ReactDOMServer from "react-dom/server";
+import ReactDOM from "react-dom/client";
 
 /**
  * Cauldron node in the network
@@ -35,6 +38,41 @@ interface CauldronPath {
   metadata?: {
     [key: string]: any;
   };
+}
+
+interface CauldronLevels {
+  cauldron_001: number,
+  cauldron_002: number,
+  cauldron_003: number,
+  cauldron_004: number,
+  cauldron_005: number,
+  cauldron_006: number,
+  cauldron_007: number,
+  cauldron_008: number,
+  cauldron_009: number,
+  cauldron_010: number,
+  cauldron_011: number,
+  cauldron_012: number
+}
+
+interface HistoricalData {
+  timestamp: string;
+  cauldron_levels: CauldronLevels;
+}
+
+
+
+function findClosestTimestamp(data: HistoricalData[]): HistoricalData | null {
+  if (data.length === 0) return null;
+
+  const now = new Date();
+  
+  return data.reduce((closest, current) => {
+    const currentDiff = Math.abs(new Date(current.timestamp).getTime() - now.getTime());
+    const closestDiff = Math.abs(new Date(closest.timestamp).getTime() - now.getTime());
+    
+    return currentDiff < closestDiff ? current : closest;
+  })
 }
 
 function NetworkMap() {
@@ -89,6 +127,7 @@ function NetworkMap() {
       console.log('Mapped cauldron:', cauldron);
       return cauldron;
     });
+  const [cauldronLevels, setCauldronLevels] = useState<HistoricalData[]>([]);
 
     // Map network paths
     const edges = networkJson?.edges || [];
@@ -152,22 +191,83 @@ function NetworkMap() {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const [cRes, nRes] = await Promise.all([
+
+        const [cRes, nRes, nodesRes, hData] = await Promise.all([
           fetch('/api/Information/cauldrons'),
           fetch('/api/Information/network'),
+          fetch('/api/Information/nodes'),
+          fetch('/api/Data')
         ]);
-
-        if (!cRes.ok || !nRes.ok) {
+        
+        if (!cRes.ok || !nRes.ok || !nodesRes.ok || !hData.ok) {
           throw new Error('Failed to fetch initial data');
         }
 
-        const [cauldronsJson, networkJson] = await Promise.all([
-          cRes.json(),
-          nRes.json(),
-        ]);
+        const cauldronsJson = cRes.ok ? await cRes.json() : null;
+        const networkJson = nRes.ok ? await nRes.json() : null;
+        const nodesJson = nodesRes.ok ? await nodesRes.json() : null;
+        const cauldronLevelsJson = hData.ok ? await hData.json() : null;
+        
+                handleData(cauldronsJson, networkJson, Array.isArray(cauldronsJson) ? cauldronsJson : null);
 
-        // Pass cauldrons metadata as both source and meta so handleData handles it
-        handleData(cauldronsJson, networkJson, Array.isArray(cauldronsJson) ? cauldronsJson : null);
+        // cauldrons endpoint is expected to return an array
+        const cauldronsArr = Array.isArray(cauldronsJson) ? cauldronsJson : (cauldronsJson && cauldronsJson.nodes) || [];
+
+          const mappedCauldrons = cauldronsArr.map((c: any) => ({
+          id: c.id,
+          name: c.name || c.id,
+          longitude: c.longitude != null ? Number(c.longitude) : null,
+          latitude: c.latitude != null ? Number(c.latitude) : null,
+          capacity: c.max_volume != null ? Number(c.max_volume) : 0,
+          // preserve unknowns — UI uses fillPercent; if not present default to 0
+          currentFill: 0,
+          fillPercent: c.fillPercent != null ? Number(c.fillPercent) : 0,
+          metadata: c,
+        }));
+
+              // const key: keyof CauldronLevels = cauldron.id as keyof CauldronLevels;
+
+        
+        // let mappedCauldrons = _mappedCauldrons;
+        // if (closestData) {
+        //   mappedCauldrons = _mappedCauldrons.map((c) => ({
+        //   currentFill: closestData[c.name as keyof CauldronLevels],
+        // }))
+        // }
+
+        // Build a lookup of nodes returned by /api/Information/nodes
+        const nodesArr = Array.isArray(nodesJson) ? nodesJson : (nodesJson && nodesJson.nodes) || [];
+        const nodesLookup = new Map<string, any>();
+        for (const n of nodesArr) {
+          if (!n || !n.id) continue;
+          nodesLookup.set(n.id, n);
+        }
+
+        // network endpoint expected shape: { edges: [...] }
+        const edges = (networkJson && networkJson.edges) || [];
+        const mappedPaths: CauldronPath[] = edges.map((e: any, idx: number) => ({
+          id: e.id || `edge-${idx}-${e.from}-${e.to}`,
+          from: e.from,
+          to: e.to,
+          bandwidth: e.bandwidth != null ? Number(e.bandwidth) : undefined,
+          latency: e.travel_time_minutes != null ? Number(e.travel_time_minutes) : undefined,
+          // allow pulsing for short travel times as a heuristic, otherwise false
+          shouldPulse: typeof e.travel_time_minutes === 'number' ? e.travel_time_minutes < 10 : false,
+          metadata: e,
+        }));
+
+        if (!mounted) return;
+        setCauldrons(mappedCauldrons);
+        setPaths(mappedPaths);
+        setNodesArray(nodesArr);
+        
+        //console.log("cauldrons",cauldrons);
+        // Set cauldron levels - note that state updates are asynchronous
+        // so we log the fetched data directly, not the state variable
+        if (cauldronLevelsJson) {
+          setCauldronLevels(cauldronLevelsJson);
+          //console.log("cauldron levels loaded:", cauldronLevelsJson);
+        }
       } catch (err) {
         console.error('Failed to load initial data:', err);
       }
@@ -196,6 +296,10 @@ function NetworkMap() {
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
     map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+
+    map.current.on('load', () => {
+      //console.log('✅ Map loaded successfully!');
+    });
 
     return () => {
       markersRef.current.forEach(marker => marker.remove());
@@ -252,7 +356,51 @@ function NetworkMap() {
   }, [cauldrons, paths]);
 
   // Add paths between nodes
-  const addPaths = useCallback(() => {
+  // Separate effect to update cauldron markers when historical data loads
+  useEffect(() => {
+        //console.log("redrawing:", cauldronLevels);
+      //console.log(!map.current );
+      //console.log();
+    if (!map.current ) return;
+        //console.log("redrawing:", cauldronLevels);
+
+    if (cauldrons.length === 0) return;
+    
+    // Only update markers if we have cauldronLevels data      
+    //console.log("redrawing:", cauldronLevels);
+
+    if (cauldronLevels.length > 0) {
+        const closestData = findClosestTimestamp(cauldronLevels)?.cauldron_levels;
+      console.log("before:",cauldrons);
+      console.log(closestData)
+      if (closestData) {
+        console.log(cauldrons[0].id)
+        console.log(closestData[cauldrons[0].id as keyof CauldronLevels])
+
+        const newCauldrons = cauldrons.map((c) => ({
+          ...c,
+          currentFill: closestData[c.id as keyof CauldronLevels],
+          fillPercent: closestData[c.id as keyof CauldronLevels]/c.capacity * 100,
+        }));
+                    console.log("after:",newCauldrons);
+        setCauldrons(newCauldrons);
+      }
+
+      //console.log("redrawing");
+      // addCauldrons();
+    }
+  }, [cauldronLevels]);
+
+  useEffect(() => {
+  if (!map.current) return;
+  if (cauldrons.length === 0) return;
+  
+  console.log("add cauldrons", cauldrons);
+  addCauldrons();
+}, [cauldrons]);
+
+  // Draw connection lines between cauldrons
+  const addPaths = () => {
     if (!map.current) return;
 
     const resolveCoords = (id: string) => {
@@ -442,6 +590,7 @@ function NetworkMap() {
   // Add cauldron markers
   const addCauldrons = useCallback(() => {
     if (!map.current) return;
+  console.log("in add cauldrons", cauldrons);
 
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
@@ -503,18 +652,54 @@ function NetworkMap() {
       pillContainer.appendChild(percentText);
       el.appendChild(pillContainer);
 
-      const popupContent = `
-        <div style="padding: 8px;">
-          <strong>${cauldron.name}</strong><br/>
-          <span style="color: #888;">ID: ${cauldron.id}</span><br/>
-          Fill Level: <strong>${cauldron.fillPercent}%</strong><br/>
-          Current: ${cauldron.currentFill} / ${cauldron.capacity}<br/>
-          Available: ${cauldron.capacity - cauldron.currentFill}<br/>
-          Location: [${cauldron.longitude.toFixed(4)}, ${cauldron.latitude.toFixed(4)}]
-        </div>
-      `;
+      // Pulse animation for critically full cauldrons
+      if (cauldron.fillPercent >= 80) {
+        pillContainer.style.animation = 'pulse-warning 1.5s infinite';
+      }
 
-      const popup = new mapboxgl.Popup({ offset: 30 }).setHTML(popupContent);
+      // const popupContent = `
+      //   <div style="padding: 8px;">
+      //     <strong>${cauldron.name}</strong><br/>
+      //     <span style="color: #888;">ID: ${cauldron.id}</span><br/>
+      //     Fill Level: <strong>${cauldron.fillPercent}%</strong><br/>
+      //     Current: ${cauldron.currentFill} / ${cauldron.capacity}<br/>
+      //     Available: ${cauldron.capacity - cauldron.currentFill}<br/>
+      //     Location: [${cauldron.longitude.toFixed(4)}, ${cauldron.latitude.toFixed(4)}]
+      //   </div>
+      // `;
+
+      const key: keyof CauldronLevels = cauldron.id as keyof CauldronLevels;
+      // //console.log("cauldron id",cauldron.id);
+      // //console.log(key);
+      const levels = cauldronLevels.map((obj) => obj.cauldron_levels[key]);
+      // //console.log(cauldronLevels.map((obj) => obj.cauldron_levels)[0][key]);
+      //console.log(levels);
+      //console.log(typeof levels)
+      // //console.log(cauldronLevels);
+      // const popupContent = <GraphPopup data={levels}></GraphPopup>
+
+      // Create a container for the popup
+      const popupNode = document.createElement("div");
+      // popupNode.style.width = "800px";
+      // popupNode.style.height = "400px";      // Mount the React component into it
+      const root = ReactDOM.createRoot(popupNode);
+
+      const width = 400;
+      const height = 250;
+      //console.log("cauldron", cauldron);
+      root.render(<GraphPopup data={levels.slice(0, 1000)} maxFill={cauldron.capacity} name={cauldron.name} width={width} height={height}/>);
+
+      // Use setDOMContent instead of setHTML
+      const popup = new mapboxgl.Popup({ offset: 30,   maxWidth: '800px'  // Add this to prevent the popup from constraining the content
+ }).setDOMContent(popupNode);
+
+const styleTag = document.createElement('style');
+styleTag.textContent = `
+  .mapboxgl-popup-close-button {
+    color: #ff0000;
+  }
+`;
+      document.head.appendChild(styleTag);
 
       if (map.current) {
         const marker = new mapboxgl.Marker({
