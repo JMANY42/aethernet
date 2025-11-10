@@ -1,10 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import '../styles/App.css'
-import Homepage from './Homepage'
-import Map from './Map'
-import cloudLogo from '../assets/pixelarticons--cloud.png'
-import whiteCloudLogo from '../assets/whiteCloudLogo.png'
-import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import "../styles/App.css";
+import Homepage from "./homepage";
+import Map from "./Map";
+import cloudLogo from "../assets/pixelarticons--cloud.png";
+import whiteCloudLogo from "../assets/whiteCloudLogo.png";
+import { useState, useEffect } from "react";
 
 function App() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -18,19 +18,19 @@ function App() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <Router>
       <div className="app">
-        <nav className={`navigation ${isScrolled ? 'scrolled' : ''}`}>
+        <nav className={`navigation ${isScrolled ? "scrolled" : ""}`}>
           <div className="nav-content">
             <Link to="/">
-              <img 
-                src={isScrolled ? cloudLogo : whiteCloudLogo} 
-                alt="Cloud Logo" 
+              <img
+                src={isScrolled ? cloudLogo : whiteCloudLogo}
+                alt="Cloud Logo"
                 className="nav-logo"
               />
             </Link>
@@ -51,7 +51,7 @@ function App() {
         </Routes>
       </div>
     </Router>
-  )
+  );
 }
 
 export default App;

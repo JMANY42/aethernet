@@ -186,6 +186,43 @@ router.get('/Information/nodes', (req, res) => {
   return res.json({ nodes: out });
 });
 
+// GET /api/Information/graph - return the full graph (nodes + edges) as JSON
+router.get('/Information/graph', (req, res) => {
+  let graph = null;
+  try {
+    const { getGraph } = require('../map/graphStore');
+    graph = getGraph();
+  } catch (e) {
+    // ignore and fallback
+  }
+  // if (!graph && req.app && req.app.locals) graph = req.app.locals.graph;
+
+  if (!graph) return res.status(503).json({ error: 'Graph not available' });
+
+  try {
+    const nodesOut = [];
+    for (const [id, node] of graph.nodes.entries()) {
+      if (node && typeof node.toJSON === 'function') nodesOut.push(node.toJSON());
+      else nodesOut.push({ id });
+    }
+
+    const edgesOut = [];
+    for (const [from, neighbors] of graph.adjacency.entries()) {
+      for (const { to, travel_time_minutes, bandwidth } of neighbors) {
+        const edge = { from, to };
+        if (typeof travel_time_minutes !== 'undefined') edge.travel_time_minutes = travel_time_minutes;
+        if (typeof bandwidth !== 'undefined') edge.bandwidth = bandwidth;
+        edgesOut.push(edge);
+      }
+    }
+
+    return res.json({ nodes: nodesOut, edges: edgesOut });
+  } catch (err) {
+    console.error('Error serializing graph:', err);
+    return res.status(500).json({ error: 'Failed to serialize graph', details: String(err) });
+  }
+});
+
 // Function to generate historical data (for development)
 const generateHistoricalData = (graph) => {
   if (!graph) return;
